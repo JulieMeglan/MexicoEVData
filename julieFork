@@ -1,0 +1,112 @@
+class Muni:
+    def __init__(self, city, num, neighbors, distance):
+        self.city = city
+        self.num = num 
+        self.neighbors = []
+        self.distance = []
+        for neighbor in neighbors:
+            self.neighbors.append(neighbor)
+        for dist in distance:
+            self.distance.append(dist) 
+
+def makeAdjacencyMatrix(cities):
+    numCities = len(cities)
+    adjMatrix = [[float('inf')] * numCities for _ in range(numCities)]
+    
+    initializeDiagonalToZero(adjMatrix, numCities)
+    fillMatrixWithKnownValues(adjMatrix, cities)
+
+    return adjMatrix
+
+def initializeDiagonalToZero(adjMatrix, numCities):
+    for i in range(numCities):
+        adjMatrix[i][i] = 0
+
+def fillMatrixWithKnownValues(adjMatrix, cities):
+    for city in cities.values():
+        city_index = city.num
+        for neighbor, distance in zip(city.neighbors, city.distance):        
+            neighbor_index = cities[neighbor].num
+            adjMatrix[city_index][neighbor_index] = distance
+
+def printMatrix(adjMatrix):
+    for row in adjMatrix:
+        print(row)
+
+def floydWarshallAlgorithm(adjMatrix):
+    numCities = len(adjMatrix)
+    for k in range(numCities):
+        for i in range(numCities):
+            for j in range(numCities):
+                if adjMatrix[i][k] + adjMatrix[k][j] < adjMatrix[i][j]:
+                    adjMatrix[i][j] = adjMatrix[i][k] + adjMatrix[k][j]
+    return adjMatrix
+
+def printNoRoute(start, end):
+        print("No route between ", start.city, " and ", end.city, " exists")
+
+def findRoute(start, end, adjMatrix, cities, vechicleRange):
+    exceededRange = False 
+    route = [start.city]
+    distance = [0]
+    
+    nextCity = start 
+    while nextCity != end and not exceededRange:
+        for neighbor in nextCity.neighbors:
+            neighborCity = cities[neighbor]
+            if adjMatrix[nextCity.num][neighborCity.num] + adjMatrix[neighborCity.num][end.num] == adjMatrix[nextCity.num][end.num]:
+                route.append(neighbor)
+                if adjMatrix[nextCity.num][neighborCity.num] > vechicleRange:
+                    exceededRange = True
+                    print("Exceeded range")
+                    break 
+                distance.append(adjMatrix[nextCity.num][neighborCity.num])
+                nextCity = neighborCity 
+                break
+    return route, distance
+
+def checkIfRouteExists(adjMatrix, start, end):
+    if adjMatrix[start.num][end.num] == float('inf'):
+        return True 
+    else:
+        return False
+
+def printResults(route, distance, start, end):
+    print("\nThe route between", start.city, "and", end.city, "is:")
+    print(route)
+    print("The distance between each city is:")
+    print(distance)
+    print("The total distance is", sum(distance))
+
+
+#dummy data
+cityA = Muni('A', 0, neighbors=['B', 'D'], distance=[4, 5])
+cityB = Muni('B', 1, neighbors=['C', 'E'], distance=[1, 6])
+cityC = Muni('C', 2, neighbors=['A', 'D'], distance=[2, 3])
+cityD = Muni('D', 3, neighbors=['C', 'E'], distance=[1, 2])
+cityE = Muni('E', 4, neighbors=['A', 'D'], distance=[1, 4])
+
+
+cities = {'A': cityA, 'B': cityB, 'C': cityC, 'D': cityD, 'E': cityE}
+
+adjMatrix = makeAdjacencyMatrix(cities)
+print("\nAdjacency matrix:")
+printMatrix(adjMatrix)
+
+adjMatrix = floydWarshallAlgorithm(adjMatrix)
+print("\nAdjacency matrix after Floyd-Warshall algorithm:")
+printMatrix(adjMatrix)
+
+#initialize starting data
+start = cityA
+end = cityD
+vehicleRange = 6
+
+distance = [0]
+route = [start.city]
+
+if checkIfRouteExists(adjMatrix, start, end):
+    printNoRoute(start, end)
+else:
+    route, distance = findRoute(start, end, adjMatrix, cities, vehicleRange)
+    printResults(route, distance, start, end)
