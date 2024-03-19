@@ -55,9 +55,9 @@ class FloydWarshall(Algorithm):
             for neighbor in graph.getMunicipalityNeighbors(nextMuni.code):
                 neighborMuni: Municipality = graph[neighbor]
                 if (
-                    adjMatrix[nextMuni.index][neighborMuni.index]
-                    + adjMatrix[neighborMuni.index][endMuni.index]
-                    == adjMatrix[nextMuni.index][endMuni.index]
+                    int(adjMatrix[nextMuni.index][neighborMuni.index]
+                    + adjMatrix[neighborMuni.index][endMuni.index])
+                    == int(adjMatrix[nextMuni.index][endMuni.index])
                 ):
 
                     if not neighborMuni.hasSupercharger:
